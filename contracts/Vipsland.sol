@@ -34,12 +34,17 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
     }
 
     //MerkleProof
-    function setMerkleRoot(bytes32 merkleroot) public onlyOwner {
-        root = merkleroot;
+    function setMerkleRoot(bytes32 merkleroot, uint8 stage) public onlyOwner {
+        if (stage == 2) {
+            rootint = merkleroot;
+        }
+        if (stage == 1) {
+            rootair = merkleroot;
+        }
     }
 
-    modifier isValidMerkleProof(bytes32[] calldata _proof) {
-        require(MerkleProof.verify(_proof, root, keccak256(abi.encodePacked(msg.sender))) == true, "e24");
+    modifier isValidMerkleProof(bytes32[] calldata _proof, uint8 stage) {
+        require(MerkleProof.verify(_proof, stage ==  1 ? rootair : rootint, keccak256(abi.encodePacked(msg.sender))) == true, "e24");
         _;
     }
 
@@ -208,21 +213,24 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
     // events end
 
     //MerkleProof
-    bytes32 public root;
+    bytes32 public rootair;
+    bytes32 public rootint;
 
     constructor(
         address[] memory _team,
         uint[] memory _teamShares,
         string memory _notRevealedUri,
         string memory _revealedUri,
-        bytes32 merkleroot
+        bytes32 merklerootair,
+        bytes32 merklerootint
     )
         ERC1155(_notRevealedUri)
         PaymentSplitter(_team, _teamShares) // Split the payment based on the teamshares percentages
         ReentrancyGuard() //A modifier that can prevent reentrancy during certain functions
     {
         //MerkleProof
-        root = merkleroot;
+        rootair = merklerootair;
+        rootint = merklerootint;
 
         //metadata
         notRevealedUri = _notRevealedUri;
@@ -479,38 +487,22 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
         _;
     }
 
-    //main function to mint NONMP
     function mintNONMPForAIRDROP(
         address account,
         uint8 _amount_wanted_able_to_get,
         uint8 stage,
         bytes32[] calldata _proof
-    ) external payable onlyForCaller(account) onlyAccounts presalePRTisActive nonReentrant isValidMerkleProof(_proof) {
+    ) external payable onlyForCaller(account) onlyAccounts presalePRTisActive nonReentrant isValidMerkleProof(_proof, 1) {
         require(_amount_wanted_able_to_get > 0, "e15");
         require(msg.sender != address(0), "e16");
 
         //stage 1 aidropd
         if (stage == 1) {
-            mintNONMPForAIRDROPInternal(_amount_wanted_able_to_get);
+            _mintNONMPForAIRDROP(_amount_wanted_able_to_get);
         }
     }
 
-    //main function to mint NONMP
-    function mintNONMP(address account, uint8 _amount_wanted_able_to_get, uint8 stage) external payable onlyForCaller(account) onlyAccounts presalePRTisActive nonReentrant {
-        require(_amount_wanted_able_to_get > 0, "e15");
-        require(msg.sender != address(0), "e16");
-
-        //stage 2 interna
-        //stage 4 normal
-        if (stage == 2) {
-            mintNONMPForInternalTeam(_amount_wanted_able_to_get);
-        }
-        if (stage == 4) {
-            mintNONMPForNomalUser(_amount_wanted_able_to_get);
-        }
-    }
-
-    function mintNONMPForAIRDROPInternal(uint8 qnt) internal {
+    function _mintNONMPForAIRDROP(uint8 qnt) internal {
         bool isRemainMessageNeeds = false;
 
         //added:0
@@ -583,7 +575,22 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
         }
     }
 
-    function mintNONMPForInternalTeam(uint8 qnt) internal {
+
+    function mintNONMPForInternalTeam(
+        address account,
+        uint8 _amount_wanted_able_to_get,
+        uint8 stage,
+        bytes32[] calldata _proof
+    ) external payable onlyForCaller(account) onlyAccounts presalePRTisActive nonReentrant isValidMerkleProof(_proof, 2) {
+        require(_amount_wanted_able_to_get > 0, "e15");
+        require(msg.sender != address(0), "e16");
+
+        if (stage == 2) {
+            _mintNONMPForInternalTeam(_amount_wanted_able_to_get);
+        }
+    }
+
+    function _mintNONMPForInternalTeam(uint8 qnt) internal {
         bool isRemainMessageNeeds = false;
 
         //added:0
@@ -655,7 +662,17 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
         }
     }
 
-    function mintNONMPForNomalUser(uint8 qnt) internal {
+    function mintNONMPForNormalUser(address account, uint8 _amount_wanted_able_to_get, uint8 stage) external payable onlyForCaller(account) onlyAccounts presalePRTisActive nonReentrant {
+        require(_amount_wanted_able_to_get > 0, "e15");
+        require(msg.sender != address(0), "e16");
+
+        if (stage == 4) {
+            _mintNONMPForNormalUser(_amount_wanted_able_to_get);
+        }
+    }
+
+
+    function _mintNONMPForNormalUser(uint8 qnt) internal {
         bool isRemainMessageNeeds = false;
 
         //added:0

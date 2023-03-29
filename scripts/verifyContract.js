@@ -3,7 +3,8 @@ require('@nomiclabs/hardhat-etherscan')
 const hre = require('hardhat')
 const { MerkleTree } = require('merkletreejs')
 const keccak256 = require('keccak256')
-const whitelist = require('./whitelist.js')
+const allowlist_airdrop = require('./allowlist_airdrop.js')
+const allowlist_internal = require('./allowlist_internal.js')
 
 
 //payment splitter
@@ -17,16 +18,20 @@ const _teamShares = [5, 15]; // 2 PEOPLE IN THE TEAM
 const _notRevealedUri = "https://ipfs.vipsland.com/nft/collections/genesis/json/hidden.json";
 const _revealedUri = "https://ipfs.vipsland.com/nft/collections/genesis/json/";
 
-const leafNodes = whitelist.map((addr) => keccak256(addr))
-const merkleTree = new MerkleTree(leafNodes, keccak256, { sortPairs: true })
-const root = merkleTree.getRoot()
+const leafNodes_air = allowlist_airdrop.map((addr) => keccak256(addr))
+const merkleTree_air = new MerkleTree(leafNodes_air, keccak256, { sortPairs: true })
+const root_air = merkleTree_air.getRoot()
+
+const leafNodes_int = allowlist_internal.map((addr) => keccak256(addr))
+const merkleTree_int = new MerkleTree(leafNodes_int, keccak256, { sortPairs: true })
+const root_int = merkleTree_int.getRoot()
 
 
 async function main() {
 
   await hre.run('verify:verify', {
-    address: '0xDeA6e1bCBEBC753524F2f9752f45527a3Ed05257',//latest
-    constructorArguments: [_team, _teamShares, _notRevealedUri, _revealedUri, root]
+    address: '0xF4f2a19586c83819357F6816507152c2b92cc935',//latest contract
+    constructorArguments: [_team, _teamShares, _notRevealedUri, _revealedUri, root_air, root_int]
   })
 }
 

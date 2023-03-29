@@ -10,3 +10,6 @@ cache
 artifacts
 
 .env
+
+allowlist_airdrop.js
+allowlist_internal.js

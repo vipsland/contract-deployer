@@ -507,12 +507,12 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
 
         //added:0
         require(presalePRT & 0x1 == 1, "e21");
-        require(userNONMPs[msg.sender] <= MAX_PRT_AMOUNT_PER_ACC, "e17");
-        require(qnt <= MAX_PRT_AMOUNT_PER_ACC_PER_TRANSACTION, "e18");
+        require(userNONMPs[msg.sender] <= MAX_PRT_AMOUNT_PER_ACC_AIRDROP, "e17");
+        require(qnt <= MAX_PRT_AMOUNT_PER_ACC_PER_TRANSACTION_AIRDROP, "e18");
 
         //added:1
-        if (userNONMPs[msg.sender] + qnt > MAX_PRT_AMOUNT_PER_ACC) {
-            qnt = uint8(MAX_PRT_AMOUNT_PER_ACC - userNONMPs[msg.sender]);
+        if (userNONMPs[msg.sender] + qnt > MAX_PRT_AMOUNT_PER_ACC_AIRDROP) {
+            qnt = uint8(MAX_PRT_AMOUNT_PER_ACC_AIRDROP - userNONMPs[msg.sender]);
             isRemainMessageNeeds = true;
         }
 
@@ -595,12 +595,12 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
 
         //added:0
         require(presalePRT & 0x2 == 2, "e21");
-        require(userNONMPs[msg.sender] <= MAX_PRT_AMOUNT_PER_ACC, "e17");
-        require(qnt <= MAX_PRT_AMOUNT_PER_ACC_PER_TRANSACTION, "e18");
+        require(userNONMPs[msg.sender] <= MAX_PRT_AMOUNT_PER_ACC_INTERNAL, "e17");
+        require(qnt <= MAX_PRT_AMOUNT_PER_ACC_PER_TRANSACTION_INTERNAL, "e18");
 
         //added:1
-        if (userNONMPs[msg.sender] + qnt > MAX_PRT_AMOUNT_PER_ACC) {
-            qnt = uint8(MAX_PRT_AMOUNT_PER_ACC - userNONMPs[msg.sender]);
+        if (userNONMPs[msg.sender] + qnt > MAX_PRT_AMOUNT_PER_ACC_INTERNAL) {
+            qnt = uint8(MAX_PRT_AMOUNT_PER_ACC_INTERNAL - userNONMPs[msg.sender]);
             isRemainMessageNeeds = true;
         }
 

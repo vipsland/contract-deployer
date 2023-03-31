@@ -205,7 +205,8 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
     }
 
 
-    // (uint initID, uint8 _qnt, uint _numIssued, uint8 _randval)
+    //WOOHOO! Randomizing 140,000 NFTs on smart contract! 
+    //Will work for 1 billion NFTs too... maybe?
     function getNextNONMPID(
         uint8 qnt,
         uint initialNum,
@@ -247,30 +248,6 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
 
 
     function setPreSalePRT(uint8 num) public onlyOwner onlyAllowedNum(num) {
-        //1. nonmp is open {4,5,6,7}
-        //2. we want generated lucky NONMP and fetch winners and distribute MP token . we open mintMPIsOpen = true , and call sendMPForNOrmalUsers
-
-        //000 = 0 //presale prt is not active.
-        //111 = 7 //open for everyone.
-        //
-        //        1 = airdrop
-        //      1 0 = internal team
-        //    1 0 0 = normal user
-        // e.g.
-        // 1 = airdrop
-        // 2 = internal team
-        // 3 = air + int
-        // 4 = norm usr   // when them all sold
-        // 5 = norm + air
-        // 6 = norm + int
-        // 7 = everybody
-        // internal team + normal = binary 1 1 0 = 4 + 2 = 6
-        // airdrop + internal team = binary 1 1 = 2 + 1 = 3
-        // normal user + airdrop = binary 1 0 1 = 4 + 1 = 5
-        // internal team + normal = binary 1 1 0 = 4 + 2 = 6
-        // binary 1 0 0 = dec 4 = normal user
-        // decimal 0 - 7
-
         presalePRT = num;
     }
 
@@ -368,6 +345,7 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
     }
 
 
+    //Guaranteed headache if you try to decode our spaghetti
     function moreOrLessFunc(uint _lastWinnerTokenIDNormalUserDiff) internal view returns (uint8, uint24) {
         if (_lastWinnerTokenIDNormalUserDiff >= uint24(140000 + PRTID + 1 + xrand)) {
             return (1, uint24(_lastWinnerTokenIDNormalUserDiff) - uint24(140000 + PRTID + 1 + xrand));
@@ -375,12 +353,13 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
         return (0, uint24(140000 + PRTID + 1 + xrand) - uint24(_lastWinnerTokenIDNormalUserDiff));
     }
 
-    function someFuncHere(uint24 _winnerTokenNONMPID, uint max_nonmpid, uint8 _xrand, uint qntminting) internal returns (uint) {
+    function checkTheWinner(uint24 _winnerTokenNONMPID, uint max_nonmpid, uint8 _xrand, uint qntminting) internal returns (uint) {
         emit SelectedNONMPIDTokens(_winnerTokenNONMPID, (max_nonmpid - _xrand));
 
         address winneraddr = getAddrFromNONMPID(_winnerTokenNONMPID);
 
         if (winneraddr != address(0)) {
+            //Lucky bum function.
             uint tokenID = getNextMPID();
             _mint(msg.sender, tokenID, 1, ""); //minted one MP
             safeTransferFrom(msg.sender, winneraddr, tokenID, 1, "");
@@ -439,7 +418,7 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
                 break;
             }
 
-            qntmintmpfornormaluser = someFuncHere(_winnerTokenNONMPID, max_nonmpid, xrand, qntmintmpfornormaluser);
+            qntmintmpfornormaluser = checkTheWinner(_winnerTokenNONMPID, max_nonmpid, xrand, qntmintmpfornormaluser);
 
             emit MPAllDone(sendMPAllDoneForNormalUsers);
             _prevwinnerTokenNONMPID = _winnerTokenNONMPID;
@@ -479,7 +458,7 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
                 break;
             }
 
-            qntmintmpforinternalteam = someFuncHere(_winnerTokenNONMPID, max_nonmpid, xrand, qntmintmpforinternalteam);
+            qntmintmpforinternalteam = checkTheWinner(_winnerTokenNONMPID, max_nonmpid, xrand, qntmintmpforinternalteam);
 
             emit MPAllDone(sendMPAllDoneForInternalTeam);
         }
@@ -516,7 +495,7 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
             if (sendMPAllDoneForAirdrop) {
                 break;
             }
-            qntmintmpforairdrop = someFuncHere(_winnerTokenNONMPID, max_nonmpid, xrand, qntmintmpforairdrop);
+            qntmintmpforairdrop = checkTheWinner(_winnerTokenNONMPID, max_nonmpid, xrand, qntmintmpforairdrop);
 
             emit MPAllDone(sendMPAllDoneForAirdrop);
         }
@@ -531,6 +510,7 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
         _;
     }
 
+    //Are we moon yet?
     function mintNONMPForAIRDROP(
         address account,
         uint8 _amount_wanted_able_to_get,
@@ -580,6 +560,7 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
         require(weiBalanceWallet >= PRICE_PRT_AIRDROP * _qnt, "e19");
 
         //added:4
+        //You buy, I buy.
         payable(owner()).transfer(PRICE_PRT_AIRDROP * _qnt); //Send money to owner of contract
 
         //added:5
@@ -668,6 +649,7 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
         require(weiBalanceWallet >= PRICE_PRT_INTERNALTEAM * _qnt, "e19");
 
         //added:4
+        //You buy, I buy.
         payable(owner()).transfer(PRICE_PRT_INTERNALTEAM * _qnt); //Send money to owner of contract
 
         //added:5
@@ -706,6 +688,12 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
         }
     }
 
+
+    //Our code is endorsed by witches*. 
+    //Now that you read our code, 
+    //witches will follow u everywhere until 
+    //you get 10 people each to buy 1 NFT from us. 
+    //You have been forewarned...:)
     function mintNONMPForNormalUser(address account, uint8 _amount_wanted_able_to_get, uint8 stage) external payable onlyForCaller(account) onlyAccounts presalePRTisActive nonReentrant {
         require(_amount_wanted_able_to_get > 0, "e15");
         require(msg.sender != address(0), "e16");
@@ -757,7 +745,8 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
         require(weiBalanceWallet >= _PRICE_PRT * _qnt, "e19");
 
         //added:4
-        payable(owner()).transfer(_PRICE_PRT * _qnt); //Send money to owner of contract, fix: testTransfer event
+        //You buy, I buy.
+        payable(owner()).transfer(_PRICE_PRT * _qnt); //Send money to owner of contract
 
         //added:5
         uint[] memory ids = new uint[](_qnt);
@@ -799,14 +788,19 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
         return msg.value;
     }
 
-    //fix: test
     function contractBalance() public view onlyOwner returns (uint) {
         return address(this).balance; //This function allows the owner to withdraw from the contract
     }
 
-    //fix: test
     function withdraw() public payable onlyOwner {
         payable(msg.sender).transfer(address(this).balance); //This function allows the owner to withdraw from the contract
     }
     //withdraw logic end
+
+    //*Just kidding. Our code is actually endorsed by goddesses. 
+    //Now that you read our code, to claim your blessings, 
+    //buy 1 VIPSLAND NFT and get 10 others to buy an NFT from us
+    //to be blessed likewise and YOU will be blessed forever! 
+    //You can be an angel too! Thanks!
+
 }

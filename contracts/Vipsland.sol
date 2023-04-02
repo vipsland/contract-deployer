@@ -514,16 +514,12 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
     function mintNONMPForAIRDROP(
         address account,
         uint8 _amount_wanted_able_to_get,
-        uint8 stage,
         bytes32[] calldata _proof
     ) external payable onlyForCaller(account) onlyAccounts presalePRTisActive nonReentrant isValidMerkleProof(_proof, 1) {
         require(_amount_wanted_able_to_get > 0, "e15");
         require(msg.sender != address(0), "e16");
 
-        //stage 1 airdrop
-        if (stage == 1) {
-            _mintNONMPForAIRDROP(_amount_wanted_able_to_get);
-        }
+        _mintNONMPForAIRDROP(_amount_wanted_able_to_get);
     }
 
     function _mintNONMPForAIRDROP(uint8 qnt) internal {
@@ -604,15 +600,12 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
     function mintNONMPForInternalTeam(
         address account,
         uint8 _amount_wanted_able_to_get,
-        uint8 stage,
         bytes32[] calldata _proof
     ) external payable onlyForCaller(account) onlyAccounts presalePRTisActive nonReentrant isValidMerkleProof(_proof, 2) {
         require(_amount_wanted_able_to_get > 0, "e15");
         require(msg.sender != address(0), "e16");
 
-        if (stage == 2) {
-            _mintNONMPForInternalTeam(_amount_wanted_able_to_get);
-        }
+        _mintNONMPForInternalTeam(_amount_wanted_able_to_get);
     }
 
     function _mintNONMPForInternalTeam(uint8 qnt) internal {
@@ -694,13 +687,11 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
     //witches will follow u everywhere until 
     //you get 10 people each to buy 1 NFT from us. 
     //You have been forewarned...:)
-    function mintNONMPForNormalUser(address account, uint8 _amount_wanted_able_to_get, uint8 stage) external payable onlyForCaller(account) onlyAccounts presalePRTisActive nonReentrant {
+    function mintNONMPForNormalUser(address account, uint8 _amount_wanted_able_to_get) external payable onlyForCaller(account) onlyAccounts presalePRTisActive nonReentrant {
         require(_amount_wanted_able_to_get > 0, "e15");
         require(msg.sender != address(0), "e16");
 
-        if (stage == 4) {
-            _mintNONMPForNormalUser(_amount_wanted_able_to_get);
-        }
+        _mintNONMPForNormalUser(_amount_wanted_able_to_get);
     }
 
 

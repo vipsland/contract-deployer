@@ -160,31 +160,94 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
     bool public mintInternalTeamMPIsOpen = false;
     bool public mintAirdropMPIsOpen = false;
 
+
+    //sendMP start, mint MP start
+    function random(uint number) internal view returns (uint8) {
+        return uint8(uint(blockhash(block.number - 1)) % number);
+    }
+
+    function getNextMPID() internal returns (uint) {
+        require(numIssuedForMP < MAX_SUPPLY_MP, "e8");
+
+        uint8 randval = random(intArr.length); //0 - 199
+        uint8 iCheck = 0;
+
+        while (iCheck < uint8(intArr.length)) {
+            //below line is perfect if intArr[randval] == 100
+            if (intArr[randval] == (MAX_SUPPLY_MP / intArr.length)) {
+                //if randval == 199
+                if (randval == (intArr.length - 1)) {
+                    randval = 0;
+                } else {
+                    randval++;
+                }
+            } else {
+                break;
+            }
+            iCheck++;
+        }
+        /** end chk and reassign IDs */
+        uint256 mpid;
+
+        //intArr[randval] cannot be more than 100
+        if (intArr[randval] < NUM_TOTAL_FOR_MP / 2) {
+            mpid = ((intArr[randval] + 1) * 2) + (uint(randval) * NUM_TOTAL_FOR_MP); //100
+        } else {
+            if (randval == 0 && intArr[randval] == NUM_TOTAL_FOR_MP / 2) {
+                intArr[randval] = intArr[randval] + 2;
+            }
+            mpid = (intArr[randval] - NUM_TOTAL_FOR_MP / 2) * 2 + 1 + (uint(randval) * NUM_TOTAL_FOR_MP); //100
+        }
+
+        intArr[randval] += 1;
+        numIssuedForMP++;
+        return mpid;
+    }
+
+
+    //WOOHOO! Randomizing 140,000 NFTs on smart contract! 
+    //Will work for 1 billion NFTs too... maybe?
+    function getNextNONMPID(
+        uint8 qnt,
+        uint initialNum,
+        uint numIssued,
+        uint max_supply_token,
+        uint each_rand_slot_num_total,
+        uint[] memory intArray
+    ) internal view returns (uint, uint8, uint, uint8) {
+        require(numIssued < max_supply_token, "e20");
+
+        uint8 randval = random(max_supply_token / each_rand_slot_num_total); //0 to 15
+        uint8 iCheck = 0;
+        //uint8 randvalChk = randval;
+
+        while (iCheck != (max_supply_token / each_rand_slot_num_total)) {
+            if (intArray[randval] == each_rand_slot_num_total) {
+                if (randval == ((max_supply_token / each_rand_slot_num_total) - 1)) {
+                    randval = 0;
+                } else {
+                    randval++;
+                }
+            } else {
+                break;
+            }
+            iCheck++;
+        }
+
+        uint mpid = (intArray[randval]) + (uint(randval) * each_rand_slot_num_total);
+
+        if (intArray[randval] + qnt > each_rand_slot_num_total) {
+            qnt = uint8(each_rand_slot_num_total - intArray[randval]);
+        }
+
+        numIssued = uint(qnt + numIssued);
+        return (uint(mpid + initialNum), qnt, numIssued, randval);
+    }
+
+    //NONMP mint end
+
+
     function setPreSalePRT(uint8 num) public onlyOwner onlyAllowedNum(num) {
-        //1. nonmp is open {4,5,6,7}
-        //2. we want generated lucky NONMP and fetch winners and distribute MP token . we open mintMPIsOpen = true , and call sendMPForNOrmalUsers
-
-        //000 = 0 //presale prt is not active.
-        //111 = 7 //open for everyone.
-        //
-        //        1 = airdrop
-        //      1 0 = internal team
-        //    1 0 0 = normal user
-        // e.g.
-        // 1 = airdrop
-        // 2 = internal team
-        // 3 = air + int
-        // 4 = norm usr   // when them all sold
-        // 5 = norm + air
-        // 6 = norm + int
-        // 7 = everybody
-        // internal team + normal = binary 1 1 0 = 4 + 2 = 6
-        // airdrop + internal team = binary 1 1 = 2 + 1 = 3
-        // normal user + airdrop = binary 1 0 1 = 4 + 1 = 5
-        // internal team + normal = binary 1 1 0 = 4 + 2 = 6
-        // binary 1 0 0 = dec 4 = normal user
-        // decimal 0 - 7
-
         presalePRT = num;
     }
 
@@ -281,49 +344,8 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
         _;
     }
 
-    //sendMP start, mint MP start
-    function random(uint number) internal view returns (uint8) {
-        return uint8(uint(blockhash(block.number - 1)) % number);
-    }
 
-    function getNextMPID() internal returns (uint) {
-        require(numIssuedForMP < MAX_SUPPLY_MP, "e8");
-
-        uint8 randval = random(intArr.length); //0 - 199
-        uint8 iCheck = 0;
-
-        while (iCheck < uint8(intArr.length)) {
-            //below line is perfect if intArr[randval] == 100
-            if (intArr[randval] == (MAX_SUPPLY_MP / intArr.length)) {
-                //if randval == 199
-                if (randval == (intArr.length - 1)) {
-                    randval = 0;
-                } else {
-                    randval++;
-                }
-            } else {
-                break;
-            }
-            iCheck++;
-        }
-        /** end chk and reassign IDs */
-        uint256 mpid;
-
-        //intArr[randval] cannot be more than 100
-        if (intArr[randval] < NUM_TOTAL_FOR_MP / 2) {
-            mpid = ((intArr[randval] + 1) * 2) + (uint(randval) * NUM_TOTAL_FOR_MP); //100
-        } else {
-            if (randval == 0 && intArr[randval] == NUM_TOTAL_FOR_MP / 2) {
-                intArr[randval] = intArr[randval] + 2;
-            }
-            mpid = (intArr[randval] - NUM_TOTAL_FOR_MP / 2) * 2 + 1 + (uint(randval) * NUM_TOTAL_FOR_MP); //100
-        }
-
-        intArr[randval] += 1;
-        numIssuedForMP++;
-        return mpid;
-    }
-
+    //Guaranteed headache if you try to decode our spaghetti
     function moreOrLessFunc(uint _lastWinnerTokenIDNormalUserDiff) internal view returns (uint8, uint24) {
         if (_lastWinnerTokenIDNormalUserDiff >= uint24(140000 + PRTID + 1 + xrand)) {
             return (1, uint24(_lastWinnerTokenIDNormalUserDiff) - uint24(140000 + PRTID + 1 + xrand));
@@ -331,12 +353,13 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
         return (0, uint24(140000 + PRTID + 1 + xrand) - uint24(_lastWinnerTokenIDNormalUserDiff));
     }
 
-    function someFuncHere(uint24 _winnerTokenNONMPID, uint max_nonmpid, uint8 _xrand, uint qntminting) internal returns (uint) {
+    function checkTheWinner(uint24 _winnerTokenNONMPID, uint max_nonmpid, uint8 _xrand, uint qntminting) internal returns (uint) {
         emit SelectedNONMPIDTokens(_winnerTokenNONMPID, (max_nonmpid - _xrand));
 
         address winneraddr = getAddrFromNONMPID(_winnerTokenNONMPID);
 
         if (winneraddr != address(0)) {
+            //Lucky bum function.
             uint tokenID = getNextMPID();
             _mint(msg.sender, tokenID, 1, ""); //minted one MP
             safeTransferFrom(msg.sender, winneraddr, tokenID, 1, "");
@@ -395,7 +418,7 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
                 break;
             }
 
-            qntmintmpfornormaluser = someFuncHere(_winnerTokenNONMPID, max_nonmpid, xrand, qntmintmpfornormaluser);
+            qntmintmpfornormaluser = checkTheWinner(_winnerTokenNONMPID, max_nonmpid, xrand, qntmintmpfornormaluser);
 
             emit MPAllDone(sendMPAllDoneForNormalUsers);
             _prevwinnerTokenNONMPID = _winnerTokenNONMPID;
@@ -435,7 +458,7 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
                 break;
             }
 
-            qntmintmpforinternalteam = someFuncHere(_winnerTokenNONMPID, max_nonmpid, xrand, qntmintmpforinternalteam);
+            qntmintmpforinternalteam = checkTheWinner(_winnerTokenNONMPID, max_nonmpid, xrand, qntmintmpforinternalteam);
 
             emit MPAllDone(sendMPAllDoneForInternalTeam);
         }
@@ -472,7 +495,7 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
             if (sendMPAllDoneForAirdrop) {
                 break;
             }
-            qntmintmpforairdrop = someFuncHere(_winnerTokenNONMPID, max_nonmpid, xrand, qntmintmpforairdrop);
+            qntmintmpforairdrop = checkTheWinner(_winnerTokenNONMPID, max_nonmpid, xrand, qntmintmpforairdrop);
 
             emit MPAllDone(sendMPAllDoneForAirdrop);
         }
@@ -487,19 +510,16 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
         _;
     }
 
+    //Are we moon yet?
     function mintNONMPForAIRDROP(
         address account,
         uint8 _amount_wanted_able_to_get,
-        uint8 stage,
         bytes32[] calldata _proof
     ) external payable onlyForCaller(account) onlyAccounts presalePRTisActive nonReentrant isValidMerkleProof(_proof, 1) {
         require(_amount_wanted_able_to_get > 0, "e15");
         require(msg.sender != address(0), "e16");
 
-        //stage 1 airdrop
-        if (stage == 1) {
-            _mintNONMPForAIRDROP(_amount_wanted_able_to_get);
-        }
+        _mintNONMPForAIRDROP(_amount_wanted_able_to_get);
     }
 
     function _mintNONMPForAIRDROP(uint8 qnt) internal {
@@ -536,6 +556,7 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
         require(weiBalanceWallet >= PRICE_PRT_AIRDROP * _qnt, "e19");
 
         //added:4
+        //You buy, I buy.
         payable(owner()).transfer(PRICE_PRT_AIRDROP * _qnt); //Send money to owner of contract
 
         //added:5
@@ -579,15 +600,12 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
     function mintNONMPForInternalTeam(
         address account,
         uint8 _amount_wanted_able_to_get,
-        uint8 stage,
         bytes32[] calldata _proof
     ) external payable onlyForCaller(account) onlyAccounts presalePRTisActive nonReentrant isValidMerkleProof(_proof, 2) {
         require(_amount_wanted_able_to_get > 0, "e15");
         require(msg.sender != address(0), "e16");
 
-        if (stage == 2) {
-            _mintNONMPForInternalTeam(_amount_wanted_able_to_get);
-        }
+        _mintNONMPForInternalTeam(_amount_wanted_able_to_get);
     }
 
     function _mintNONMPForInternalTeam(uint8 qnt) internal {
@@ -624,6 +642,7 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
         require(weiBalanceWallet >= PRICE_PRT_INTERNALTEAM * _qnt, "e19");
 
         //added:4
+        //You buy, I buy.
         payable(owner()).transfer(PRICE_PRT_INTERNALTEAM * _qnt); //Send money to owner of contract
 
         //added:5
@@ -662,13 +681,17 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
         }
     }
 
-    function mintNONMPForNormalUser(address account, uint8 _amount_wanted_able_to_get, uint8 stage) external payable onlyForCaller(account) onlyAccounts presalePRTisActive nonReentrant {
+
+    //Our code is endorsed by witches*. 
+    //Now that you read our code, 
+    //witches will follow u everywhere until 
+    //you get 10 people each to buy 1 NFT from us. 
+    //You have been forewarned...:)
+    function mintNONMPForNormalUser(address account, uint8 _amount_wanted_able_to_get) external payable onlyForCaller(account) onlyAccounts presalePRTisActive nonReentrant {
         require(_amount_wanted_able_to_get > 0, "e15");
         require(msg.sender != address(0), "e16");
 
-        if (stage == 4) {
-            _mintNONMPForNormalUser(_amount_wanted_able_to_get);
-        }
+        _mintNONMPForNormalUser(_amount_wanted_able_to_get);
     }
 
 
@@ -713,7 +736,8 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
         require(weiBalanceWallet >= _PRICE_PRT * _qnt, "e19");
 
         //added:4
-        payable(owner()).transfer(_PRICE_PRT * _qnt); //Send money to owner of contract, fix: testTransfer event
+        //You buy, I buy.
+        payable(owner()).transfer(_PRICE_PRT * _qnt); //Send money to owner of contract
 
         //added:5
         uint[] memory ids = new uint[](_qnt);
@@ -750,59 +774,24 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
         }
     }
 
-    // (uint initID, uint8 _qnt, uint _numIssued, uint8 _randval)
-    function getNextNONMPID(
-        uint8 qnt,
-        uint initialNum,
-        uint numIssued,
-        uint max_supply_token,
-        uint each_rand_slot_num_total,
-        uint[] memory intArray
-    ) internal view returns (uint, uint8, uint, uint8) {
-        require(numIssued < max_supply_token, "e20");
-
-        uint8 randval = random(max_supply_token / each_rand_slot_num_total); //0 to 15
-        uint8 iCheck = 0;
-        //uint8 randvalChk = randval;
-
-        while (iCheck != (max_supply_token / each_rand_slot_num_total)) {
-            if (intArray[randval] == each_rand_slot_num_total) {
-                if (randval == ((max_supply_token / each_rand_slot_num_total) - 1)) {
-                    randval = 0;
-                } else {
-                    randval++;
-                }
-            } else {
-                break;
-            }
-            iCheck++;
-        }
-
-        uint mpid = (intArray[randval]) + (uint(randval) * each_rand_slot_num_total);
-
-        if (intArray[randval] + qnt > each_rand_slot_num_total) {
-            qnt = uint8(each_rand_slot_num_total - intArray[randval]);
-        }
-
-        numIssued = uint(qnt + numIssued);
-        return (uint(mpid + initialNum), qnt, numIssued, randval);
-    }
-
-    //NONMP mint end
-
     //withdraw logic start
     function balanceOfAccount() public payable onlyOwner returns (uint) {
         return msg.value;
     }
 
-    //fix: test
     function contractBalance() public view onlyOwner returns (uint) {
         return address(this).balance; //This function allows the owner to withdraw from the contract
     }
 
-    //fix: test
     function withdraw() public payable onlyOwner {
         payable(msg.sender).transfer(address(this).balance); //This function allows the owner to withdraw from the contract
     }
     //withdraw logic end
+
+    //*Just kidding. Our code is actually endorsed by goddesses. 
+    //Now that you read our code, to claim your blessings, 
+    //buy 1 VIPSLAND NFT and get 10 others to buy an NFT from us
+    //to be blessed likewise and YOU will be blessed forever! 
+    //You can be an angel too! Thanks!
+
 }

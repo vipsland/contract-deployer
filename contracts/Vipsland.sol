@@ -386,45 +386,19 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
 
     uint8 moreOrLess = 0;
 
-    //call 10 times
+    //sendMP start
+
     function sendMPNormalUsers() public onlyAccounts onlyOwner mintMPIsOpenModifier {
-        //fix
         require(sendMPAllDoneForNormalUsers == false, "e9");
         if (xrand == 18) {
             xrand = random(17);
         }
         _counter_for_generatelucky_mp.increment();
         uint counter = _counter_for_generatelucky_mp.current();
-        uint24 _prevwinnerTokenNONMPID;
-        for (uint i = idx; i < 1000 * counter; i++) {
-            uint24 _winnerTokenNONMPID = uint24(PRTID + 1 + xrand + uint24(uint((168888 * i) / 10000))); //updated here
-            uint max_nonmpid = PRTID + MAX_SUPPLY_FOR_PRT_TOKEN;
-            uint24 _nextwinnerTokenNONMPID = uint24(PRTID + 1 + xrand + uint24(uint((168888 * i + 1) / 10000)));
+        uint max_nonmpid = PRTID + MAX_SUPPLY_FOR_PRT_TOKEN;
 
-            sendMPAllDoneForNormalUsers = (_nextwinnerTokenNONMPID > max_nonmpid) || (_winnerTokenNONMPID > max_nonmpid);
-            emit MPAllDone(sendMPAllDoneForNormalUsers);
+        (sendMPAllDoneForNormalUsers, ) = iterateSendMP(1000 * counter, max_nonmpid, 0, qntmintmpfornormaluser);
 
-            if (sendMPAllDoneForNormalUsers) {
-                lastWinnerTokenIDNormalUserDiff = uint(_nextwinnerTokenNONMPID);
-
-                uint24 lastDiff = 0;
-                (moreOrLess, lastDiff) = moreOrLessFunc(lastWinnerTokenIDNormalUserDiff);
-                if (moreOrLess == 1) {
-                    lastWinnerTokenIDAirdropDiff = uint(140000 + lastDiff + PRTID + 1 + xrand + uint24(uint((168888 * 1000 * 19) + 1) / 10000));
-                } else {
-                    lastWinnerTokenIDAirdropDiff = uint(140000 - lastDiff + PRTID + 1 + xrand + uint24(uint((168888 * 1000 * 19) + 1) / 10000));
-                }
-
-                break;
-            }
-
-            qntmintmpfornormaluser = checkTheWinner(_winnerTokenNONMPID, max_nonmpid, xrand, qntmintmpfornormaluser);
-
-            emit MPAllDone(sendMPAllDoneForNormalUsers);
-            _prevwinnerTokenNONMPID = _winnerTokenNONMPID;
-        }
-
-        //update idx
         idx = 1000 * counter;
     }
 
@@ -435,33 +409,13 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
         _counter_for_generatelucky_mp_internalteam.increment();
         uint counter = _counter_for_generatelucky_mp_internalteam.current();
 
-        uint24 lastDiff = 0;
+        uint24 lastDiff;
         (moreOrLess, lastDiff) = moreOrLessFunc(lastWinnerTokenIDNormalUserDiff);
+        uint24 initialTokenId = moreOrLess == 1 ? 140000 + lastDiff : 140000 - lastDiff;
 
-        for (uint i = idxInternalTeam; i < 1000 * counter; i++) {
-            uint24 _winnerTokenNONMPID = 0;
-            uint24 _nextwinnerTokenNONMPID = 0;
-            if (moreOrLess == 1) {
-                _winnerTokenNONMPID = uint24(140000 + lastDiff + PRTID + 1 + xrand + uint24(uint((168888 * i) / 10000))); //updated
-                _nextwinnerTokenNONMPID = uint24(140000 + lastDiff + PRTID + 1 + xrand + uint24(uint((168888 * i + 1) / 10000)));
-            } else {
-                _winnerTokenNONMPID = uint24(140000 - lastDiff + PRTID + 1 + xrand + uint24(uint((168888 * i) / 10000))); //updated
-                _nextwinnerTokenNONMPID = uint24(140000 - lastDiff + PRTID + 1 + xrand + uint24(uint((168888 * i + 1) / 10000)));
-            }
+        uint max_nonmpid = PRTID + MAX_SUPPLY_FOR_PRT_TOKEN + MAX_SUPPLY_FOR_INTERNALTEAM_TOKEN;
 
-            uint max_nonmpid = PRTID + MAX_SUPPLY_FOR_PRT_TOKEN + MAX_SUPPLY_FOR_INTERNALTEAM_TOKEN;
-            sendMPAllDoneForInternalTeam = (_nextwinnerTokenNONMPID > max_nonmpid) || (_winnerTokenNONMPID > max_nonmpid);
-
-            emit MPAllDone(sendMPAllDoneForInternalTeam);
-
-            if (sendMPAllDoneForInternalTeam) {
-                break;
-            }
-
-            qntmintmpforinternalteam = checkTheWinner(_winnerTokenNONMPID, max_nonmpid, xrand, qntmintmpforinternalteam);
-
-            emit MPAllDone(sendMPAllDoneForInternalTeam);
-        }
+        (sendMPAllDoneForInternalTeam, ) = iterateSendMP(1000 * counter, max_nonmpid, initialTokenId, qntmintmpforinternalteam);
 
         idxInternalTeam = 1000 * counter;
     }
@@ -473,34 +427,38 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
         _counter_for_generatelucky_mp_airdrop.increment();
         uint counter = _counter_for_generatelucky_mp_airdrop.current();
 
-        uint24 lastDiff = 0;
+        uint24 lastDiff;
         (moreOrLess, lastDiff) = moreOrLessFunc(lastWinnerTokenIDNormalUserDiff);
+        uint24 initialTokenId = moreOrLess == 1 ? 160000 + lastDiff : 160000 - lastDiff;
 
-        for (uint i = idxAirdrop; i < 1000 * counter; i++) {
-            uint24 _nextwinnerTokenNONMPID = 0;
-            uint24 _winnerTokenNONMPID = 0;
-            if (moreOrLess == 1) {
-                _winnerTokenNONMPID = uint24(160000 + lastDiff + PRTID + 1 + xrand + uint24(uint((168888 * i) / 10000))); //updated here
-                _nextwinnerTokenNONMPID = uint24(160000 + lastDiff + PRTID + 1 + xrand + uint24(uint((168888 * i + 1) / 10000)));
-            } else {
-                _winnerTokenNONMPID = uint24(160000 - lastDiff + PRTID + 1 + xrand + uint24(uint((168888 * i) / 10000))); //updated here
-                _nextwinnerTokenNONMPID = uint24(160000 - lastDiff + PRTID + 1 + xrand + uint24(uint((168888 * i + 1) / 10000)));
-            }
-            uint max_nonmpid = PRTID + MAX_SUPPLY_FOR_PRT_TOKEN + MAX_SUPPLY_FOR_INTERNALTEAM_TOKEN + MAX_SUPPLY_FOR_AIRDROP_TOKEN;
+        uint max_nonmpid = PRTID + MAX_SUPPLY_FOR_PRT_TOKEN + MAX_SUPPLY_FOR_INTERNALTEAM_TOKEN + MAX_SUPPLY_FOR_AIRDROP_TOKEN;
 
-            sendMPAllDoneForAirdrop = (_nextwinnerTokenNONMPID > max_nonmpid) || (_winnerTokenNONMPID > max_nonmpid);
-
-            emit MPAllDone(sendMPAllDoneForAirdrop);
-
-            if (sendMPAllDoneForAirdrop) {
-                break;
-            }
-            qntmintmpforairdrop = checkTheWinner(_winnerTokenNONMPID, max_nonmpid, xrand, qntmintmpforairdrop);
-
-            emit MPAllDone(sendMPAllDoneForAirdrop);
-        }
+        (sendMPAllDoneForAirdrop, ) = iterateSendMP(1000 * counter, max_nonmpid, initialTokenId, qntmintmpforairdrop);
 
         idxAirdrop = 1000 * counter;
+    }
+
+    function iterateSendMP(uint limit, uint max_nonmpid, uint24 initialTokenId, uint256 qnt) private returns (bool, uint24) {
+        uint24 _prevwinnerTokenNONMPID;
+        bool allDone = false;
+
+        for (uint i = idx; i < limit; i++) {
+            uint24 _winnerTokenNONMPID = uint24(PRTID + 1 + xrand + initialTokenId + uint24(uint((168888 * i) / 10000)));
+            uint24 _nextwinnerTokenNONMPID = uint24(PRTID + 1 + xrand + initialTokenId + uint24(uint((168888 * i + 1) / 10000)));
+
+            allDone = (_nextwinnerTokenNONMPID > max_nonmpid) || (_winnerTokenNONMPID > max_nonmpid);
+            emit MPAllDone(allDone);
+
+            if (allDone) {
+                break;
+            }
+
+            qnt = checkTheWinner(_winnerTokenNONMPID, max_nonmpid, xrand, qnt);
+            emit MPAllDone(allDone);
+            _prevwinnerTokenNONMPID = _winnerTokenNONMPID;
+        }
+
+        return (allDone, _prevwinnerTokenNONMPID);
     }
 
     //sendMP end

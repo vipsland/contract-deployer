@@ -30,7 +30,7 @@ const root_int = merkleTree_int.getRoot()
 async function main() {
 
   await hre.run('verify:verify', {
-    address: '0x1237080fC952E6eF04f1C233B5B3eDEa83DE648C',//latest contract
+    address: '0xB365EcE9e12824906f22D3DF9e247E952248DFe8',//latest contract
     constructorArguments: [_team, _teamShares, _notRevealedUri, _revealedUri, root_air, root_int]
   })
 }

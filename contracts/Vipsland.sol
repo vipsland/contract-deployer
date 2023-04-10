@@ -11,7 +11,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 
-contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
+contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
     using SafeMath for uint;
     using Counters for Counters.Counter;
 
@@ -270,7 +270,7 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
 
     constructor(
         address[] memory _team,
-        uint[] memory _teamShares,
+        uint256[] memory _teamShares,
         string memory _notRevealedUri,
         string memory _revealedUri,
         bytes32 merklerootair,

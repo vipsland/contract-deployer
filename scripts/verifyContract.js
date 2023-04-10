@@ -9,8 +9,8 @@ const allowlist_internal = require('./allowlist_internal.js')
 
 //payment splitter
 const _team = [
-  '0x1090C62B584c1c9a56E3D8AFd70cf9F2ECee17CC', // miukki account gets 5% of the total revenue
-  '0x06f10E01E97718730179F53Bc6f8ff6625ACB2f1' // sam Account gets 15% of the total revenue
+  "0x522ce7ffdA95dAF57B341EEdbb6AEE97cB6cEc1f", // miukki account gets 5% of the total revenue
+  "0x28fBd13e980Fca20dB114924926AF802ac1030c5" // sam Account gets 15% of the total revenue
 ];
 
 const _teamShares = [5, 15]; // 2 PEOPLE IN THE TEAM
@@ -30,7 +30,7 @@ const root_int = merkleTree_int.getRoot()
 async function main() {
 
   await hre.run('verify:verify', {
-    address: '0x1237080fC952E6eF04f1C233B5B3eDEa83DE648C',//latest contract
+    address: '0x4437bAb5F116C78760DaA1F829bA7Be40D960524',//latest contract
     constructorArguments: [_team, _teamShares, _notRevealedUri, _revealedUri, root_air, root_int]
   })
 }

@@ -41,3 +41,20 @@
 
 
 ```
+
+
+## Debug functions we use to test winner
+
+```
+
+    //manually mint and transfer start, :debug 0x868a7f505d0A60d4Ec302E5d892c6fB4125aff77 winner test
+    function mintDebug(uint tokenID) public onlyOwner {
+        _mint(msg.sender, tokenID, 1, "");
+    }
+
+    function safeTransferDebug(uint tokenID, address addr) public onlyOwner {
+        require(exists(tokenID), "e2");
+        safeTransferFrom(msg.sender, addr, tokenID, 1, "");
+    }
+    
+```

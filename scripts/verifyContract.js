@@ -9,11 +9,11 @@ const allowlist_internal = require('./allowlist_internal.js')
 
 //payment splitter
 const _team = [
-  "0x522ce7ffdA95dAF57B341EEdbb6AEE97cB6cEc1f", // miukki account gets 5% of the total revenue
-  "0x28fBd13e980Fca20dB114924926AF802ac1030c5" // sam Account gets 15% of the total revenue
+  "0x522ce7ffdA95dAF57B341EEdbb6AEE97cB6cEc1f", // miukki 
+  "0x28fBd13e980Fca20dB114924926AF802ac1030c5",  // sam 
+  "0x18DC07CDBa57c63c8f2c1f2CBEBcdd4dc5cE638A" //owner
 ];
-
-const _teamShares = [5, 15]; // 2 PEOPLE IN THE TEAM
+const _teamShares = [5, 15, 80]; // 2 PEOPLE IN THE TEAM
 
 const _notRevealedUri = "https://ipfs.vipsland.com/nft/collections/genesis/json/hidden.json";
 const _revealedUri = "https://ipfs.vipsland.com/nft/collections/genesis/json/";
@@ -30,7 +30,7 @@ const root_int = merkleTree_int.getRoot()
 async function main() {
 
   await hre.run('verify:verify', {
-    address: '0x4437bAb5F116C78760DaA1F829bA7Be40D960524',//latest contract
+    address: '0xE744bbD1CBC16CBe2a198fbcF7F9e002DBd869Af',//latest contract
     constructorArguments: [_team, _teamShares, _notRevealedUri, _revealedUri, root_air, root_int]
   })
 }

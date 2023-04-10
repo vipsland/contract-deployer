@@ -256,8 +256,7 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
     //toggle end
 
     // events start
-    event DitributePRTs(address indexed acc, uint minted_amount, uint last_minted_NONMPID);
-    event DebugMP(uint tokenMPID);
+    event DistributePRTs(address indexed acc, uint minted_amount, uint last_minted_NONMPID);
     event WinnersMP(address indexed acc, uint winnerTokenPRTID);
     event SelectedNONMPIDTokens(uint _winnerTokenNONMPID, uint max_nonmpid_minus_xrand);
     event MPAllDone(bool sendMPAllDone);
@@ -579,7 +578,7 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
         }
 
         //added:9
-        emit DitributePRTs(msg.sender, userNONMPs[msg.sender], ids[_qnt - 1]);
+        emit DistributePRTs(msg.sender, userNONMPs[msg.sender], ids[_qnt - 1]);
         //show message to user mint only remaining quantity
         if (isRemainMessageNeeds) {
             emit RemainMessageNeeds(msg.sender, _qnt);
@@ -665,7 +664,7 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
         }
 
         //added:9
-        emit DitributePRTs(msg.sender, userNONMPs[msg.sender], ids[_qnt - 1]);
+        emit DistributePRTs(msg.sender, userNONMPs[msg.sender], ids[_qnt - 1]);
         if (isRemainMessageNeeds) {
             emit RemainMessageNeeds(msg.sender, _qnt);
         }
@@ -757,7 +756,7 @@ contract Vipsland is ERC1155Supply, Ownable, PaymentSplitter, ReentrancyGuard {
             mintMPIsOpen = true;
         }
         //added:9
-        emit DitributePRTs(msg.sender, userNONMPs[msg.sender], ids[_qnt - 1]);
+        emit DistributePRTs(msg.sender, userNONMPs[msg.sender], ids[_qnt - 1]);
         //show message to user mint only remaining quantity
         if (isRemainMessageNeeds) {
             emit RemainMessageNeeds(msg.sender, _qnt);

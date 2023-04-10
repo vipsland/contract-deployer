@@ -51,23 +51,40 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
         }
         return (string(abi.encodePacked(revealedUri, "{id}", ".json")));
     }
-
     //reveal end
-    //main nft end
 
-    //MP
-    uint public constant PRTID = 20000;
-    uint public qntmintmpfornormaluser = 0;
-    uint public qntmintmpforinternalteam = 0;
-    uint public qntmintmpforairdrop = 0;
-    uint public constant MAX_SUPPLY_MP = 20000;
-    uint8 public constant NUM_TOTAL_FOR_MP = 100;
-    uint8 public xrand = 18;
-    Counters.Counter public _counter_for_generatelucky_mp;
-    Counters.Counter public _counter_for_generatelucky_mp_internalteam;
-    Counters.Counter public _counter_for_generatelucky_mp_airdrop;
-    uint64 public numIssuedForMP = 4;
-    uint[] private intArr;
+    uint private constant PRTID = 20000;
+
+    struct StateMP {
+        QntmintMP qnt;
+        CounterForGenerateLuckyMP counter_for_generatelucky;
+    }
+
+    struct QntmintMP {
+        uint normaluser;
+        uint internalteam;
+        uint airdrop;
+    }
+    struct CounterForGenerateLuckyMP {
+        Counters.Counter normaluser;
+        Counters.Counter internalteam;
+        Counters.Counter airdrop;
+    }
+
+    StateMP private statemp;
+
+    struct IntArr {
+        uint[] mp;
+        uint[] prtnormaluser;
+        uint[] prtinternalteam;
+        uint[] prtairdrop;
+    }
+    IntArr private intarray;
+
+    uint private constant MAX_SUPPLY_MP = 20000;
+    uint8 private constant NUM_TOTAL_FOR_MP = 100;
+    uint8 private xrand = 18;    
+    uint64 private numIssuedForMP = 4;
 
     //NONMP
     mapping(uint => address) public prtPerAddress;
@@ -81,22 +98,34 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
         return address(0);
     }
 
-    // limit normal user
-    uint8 public constant MAX_PRT_AMOUNT_PER_ACC = 100;
-    uint8 public constant MAX_PRT_AMOUNT_PER_ACC_PER_TRANSACTION = 35;
+    struct PRTAmountLimits {
+        // limit normal user
+        uint8 NORMAL;
+        uint8 PER_TRANSACTION_NORMAL;
 
-    // limits airdrop
-    uint8 public constant MAX_PRT_AMOUNT_PER_ACC_AIRDROP = 3;
-    uint8 public constant MAX_PRT_AMOUNT_PER_ACC_PER_TRANSACTION_AIRDROP = 3;
+        // limits airdrop
+        uint8 AIRDROP;
+        uint8 PER_TRANSACTION_AIRDROP;
 
-    // limits internal
-    uint8 public MAX_PRT_AMOUNT_PER_ACC_INTERNAL = 25;
-    uint8 public MAX_PRT_AMOUNT_PER_ACC_PER_TRANSACTION_INTERNAL = 25;
+        // limits internal
+        uint8 INTERNAL;
+        uint8 PER_TRANSACTION_INTERNAL;
+    }
 
-    function set_MAX_PRT_AMOUNT_PER_ACC_AND_TRANSACTION_INTERNAL(uint8 amount, uint8 amount_per_transaction) public onlyOwner {
+    PRTAmountLimits public prtAmountLimits = PRTAmountLimits({
+        NORMAL: 100,
+        PER_TRANSACTION_NORMAL: 35,
+        AIRDROP: 3,
+        PER_TRANSACTION_AIRDROP: 3,
+        INTERNAL: 25,
+        PER_TRANSACTION_INTERNAL: 25
+    });
+
+
+    function set_limits_for_INTERNAL(uint8 amount, uint8 amount_per_transaction) public onlyOwner {
         require(amount_per_transaction <= amount, "e23");
-        MAX_PRT_AMOUNT_PER_ACC_INTERNAL = amount;
-        MAX_PRT_AMOUNT_PER_ACC_PER_TRANSACTION_INTERNAL = amount_per_transaction;
+        prtAmountLimits.INTERNAL = amount;
+        prtAmountLimits.PER_TRANSACTION_INTERNAL = amount_per_transaction;
     }
 
     //NONMP NORMAL 20001-160000
@@ -111,7 +140,7 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
     uint public constant EACH_RAND_SLOT_NUM_TOTAL_FOR_PRT = 10000;
     uint public numIssuedForNormalUser = 0;
     uint public constant STARTINGIDFORPRT = 20001;
-    uint[] private intArrPRT;
+
 
     //NONMP INTERNAL TEAM - 160001-180000
     uint public PRICE_PRT_INTERNALTEAM = 0 ether;
@@ -125,7 +154,6 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
     uint public constant EACH_RAND_SLOT_NUM_TOTAL_FOR_INTERNALTEAM = 1000;
     uint public numIssuedForInternalTeamIDs = 0;
     uint public constant STARTINGIDFORINTERNALTEAM = 160001;
-    uint[] private intArrPRTInternalTeam;
 
     //NONMP AIRDROP8888 - 180001-188888
     uint public PRICE_PRT_AIRDROP = 0 ether;
@@ -135,7 +163,6 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
     uint public constant EACH_RAND_SLOT_NUM_TOTAL_FOR_AIRDROP = 1111;
     uint public numIssuedForAIRDROP = 0;
     uint public constant STARTINGIDFORAIRDROP = 180001;
-    uint[] public intArrPRTAIRDROP;
 
     //toggle start
     uint8 public presalePRT = 0;
@@ -152,14 +179,14 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
     function getNextMPID() internal returns (uint) {
         require(numIssuedForMP < MAX_SUPPLY_MP, "e8");
 
-        uint8 randval = random(intArr.length); //0 - 199
+        uint8 randval = random(intarray.mp.length); //0 - 199
         uint8 iCheck = 0;
 
-        while (iCheck < uint8(intArr.length)) {
-            //below line is perfect if intArr[randval] == 100
-            if (intArr[randval] == (MAX_SUPPLY_MP / intArr.length)) {
+        while (iCheck < uint8(intarray.mp.length)) {
+            //below line is perfect if intarray.mp[randval] == 100
+            if (intarray.mp[randval] == (MAX_SUPPLY_MP / intarray.mp.length)) {
                 //if randval == 199
-                if (randval == (intArr.length - 1)) {
+                if (randval == (intarray.mp.length - 1)) {
                     randval = 0;
                 } else {
                     randval++;
@@ -172,17 +199,17 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
         /** end chk and reassign IDs */
         uint256 mpid;
 
-        //intArr[randval] cannot be more than 100
-        if (intArr[randval] < NUM_TOTAL_FOR_MP / 2) {
-            mpid = ((intArr[randval] + 1) * 2) + (uint(randval) * NUM_TOTAL_FOR_MP); //100
+        //intarray.mp[randval] cannot be more than 100
+        if (intarray.mp[randval] < NUM_TOTAL_FOR_MP / 2) {
+            mpid = ((intarray.mp[randval] + 1) * 2) + (uint(randval) * NUM_TOTAL_FOR_MP); //100
         } else {
-            if (randval == 0 && intArr[randval] == NUM_TOTAL_FOR_MP / 2) {
-                intArr[randval] = intArr[randval] + 2;
+            if (randval == 0 && intarray.mp[randval] == NUM_TOTAL_FOR_MP / 2) {
+                intarray.mp[randval] = intarray.mp[randval] + 2;
             }
-            mpid = (intArr[randval] - NUM_TOTAL_FOR_MP / 2) * 2 + 1 + (uint(randval) * NUM_TOTAL_FOR_MP); //100
+            mpid = (intarray.mp[randval] - NUM_TOTAL_FOR_MP / 2) * 2 + 1 + (uint(randval) * NUM_TOTAL_FOR_MP); //100
         }
 
-        intArr[randval] += 1;
+        intarray.mp[randval] += 1;
         numIssuedForMP++;
         return mpid;
     }
@@ -279,17 +306,17 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
         revealedUri = _revealedUri;
 
         //for mp
-        intArr = new uint[](MAX_SUPPLY_MP / NUM_TOTAL_FOR_MP);
-        intArr[0] = 2;
+        intarray.mp = new uint[](MAX_SUPPLY_MP / NUM_TOTAL_FOR_MP);
+        intarray.mp[0] = 2;
 
         //for normal user
-        intArrPRT = new uint[](MAX_SUPPLY_FOR_PRT_TOKEN / EACH_RAND_SLOT_NUM_TOTAL_FOR_PRT);
+        intarray.prtnormaluser = new uint[](MAX_SUPPLY_FOR_PRT_TOKEN / EACH_RAND_SLOT_NUM_TOTAL_FOR_PRT);
 
         //for internal team
-        intArrPRTInternalTeam = new uint[](MAX_SUPPLY_FOR_INTERNALTEAM_TOKEN / EACH_RAND_SLOT_NUM_TOTAL_FOR_INTERNALTEAM);
+        intarray.prtinternalteam = new uint[](MAX_SUPPLY_FOR_INTERNALTEAM_TOKEN / EACH_RAND_SLOT_NUM_TOTAL_FOR_INTERNALTEAM);
 
         //for airdrop
-        intArrPRTAIRDROP = new uint[](MAX_SUPPLY_FOR_AIRDROP_TOKEN / EACH_RAND_SLOT_NUM_TOTAL_FOR_AIRDROP);
+        intarray.prtairdrop = new uint[](MAX_SUPPLY_FOR_AIRDROP_TOKEN / EACH_RAND_SLOT_NUM_TOTAL_FOR_AIRDROP);
     }
 
     function isContract(address account) internal view returns (bool) {
@@ -379,8 +406,8 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
         if (xrand == 18) {
             xrand = random(17);
         }
-        _counter_for_generatelucky_mp.increment();
-        uint counter = _counter_for_generatelucky_mp.current();
+        statemp.counter_for_generatelucky.normaluser.increment();
+        uint counter = statemp.counter_for_generatelucky.normaluser.current();
         uint24 _prevwinnerTokenNONMPID;
         for (uint i = idx; i < 1000 * counter; i++) {
             uint24 _winnerTokenNONMPID = uint24(PRTID + 1 + xrand + uint24(uint((168888 * i) / 10000))); //updated here
@@ -403,7 +430,7 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
                 break;
             }
 
-            qntmintmpfornormaluser = checkTheWinner(_winnerTokenNONMPID, qntmintmpfornormaluser);
+            statemp.qnt.normaluser = checkTheWinner(_winnerTokenNONMPID, statemp.qnt.normaluser);
 
             _prevwinnerTokenNONMPID = _winnerTokenNONMPID;
         }
@@ -416,8 +443,8 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
         require(sendMPAllDoneForNormalUsers == true, "e10");
         require(sendMPAllDoneForInternalTeam == false, "e11");
 
-        _counter_for_generatelucky_mp_internalteam.increment();
-        uint counter = _counter_for_generatelucky_mp_internalteam.current();
+        statemp.counter_for_generatelucky.internalteam.increment();
+        uint counter = statemp.counter_for_generatelucky.internalteam.current();
 
         uint24 lastDiff = 0;
         (moreOrLess, lastDiff) = moreOrLessFunc(lastWinnerTokenIDNormalUserDiff);
@@ -441,7 +468,7 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
                 break;
             }
 
-            qntmintmpforinternalteam = checkTheWinner(_winnerTokenNONMPID, qntmintmpforinternalteam);
+            statemp.qnt.internalteam = checkTheWinner(_winnerTokenNONMPID, statemp.qnt.internalteam);
 
         }
 
@@ -452,8 +479,8 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
         require(sendMPAllDoneForNormalUsers == true, "e12");
         require(sendMPAllDoneForAirdrop == false, "e13");
 
-        _counter_for_generatelucky_mp_airdrop.increment();
-        uint counter = _counter_for_generatelucky_mp_airdrop.current();
+        statemp.counter_for_generatelucky.airdrop.increment();
+        uint counter = statemp.counter_for_generatelucky.airdrop.current();
 
         uint24 lastDiff = 0;
         (moreOrLess, lastDiff) = moreOrLessFunc(lastWinnerTokenIDNormalUserDiff);
@@ -476,7 +503,7 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
             if (sendMPAllDoneForAirdrop) {
                 break;
             }
-            qntmintmpforairdrop = checkTheWinner(_winnerTokenNONMPID, qntmintmpforairdrop);
+            statemp.qnt.airdrop = checkTheWinner(_winnerTokenNONMPID, statemp.qnt.airdrop);
 
         }
 
@@ -499,12 +526,13 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
 
         //step:0
         require(presalePRT & 0x1 == 1, "e21");
-        require(userNONMPs[msg.sender] <= MAX_PRT_AMOUNT_PER_ACC_AIRDROP, "e17");
-        require(qnt <= MAX_PRT_AMOUNT_PER_ACC_PER_TRANSACTION_AIRDROP, "e18");
+        require(userNONMPs[msg.sender] <= prtAmountLimits.AIRDROP, "e17");
+        require(qnt <= prtAmountLimits.PER_TRANSACTION_AIRDROP, "e18");
+        
 
         //step:1
-        if (userNONMPs[msg.sender] + qnt > MAX_PRT_AMOUNT_PER_ACC_AIRDROP) {
-            qnt = uint8(MAX_PRT_AMOUNT_PER_ACC_AIRDROP - userNONMPs[msg.sender]);
+        if (userNONMPs[msg.sender] + qnt > prtAmountLimits.AIRDROP) {
+            qnt = uint8(prtAmountLimits.AIRDROP - userNONMPs[msg.sender]);
             isRemainMessageNeeds = true;
         }
 
@@ -515,7 +543,7 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
             numIssuedForAIRDROP,
             MAX_SUPPLY_FOR_AIRDROP_TOKEN,
             EACH_RAND_SLOT_NUM_TOTAL_FOR_AIRDROP,
-            intArrPRTAIRDROP
+            intarray.prtairdrop
         );
         if (_qnt != qnt) {
             isRemainMessageNeeds = true;
@@ -548,7 +576,7 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
 
         //step:6
         numIssuedForAIRDROP = _numIssued;
-        intArrPRTAIRDROP[_randval] = intArrPRTAIRDROP[_randval] + _qnt;
+        intarray.prtairdrop[_randval] = intarray.prtairdrop[_randval] + _qnt;
 
         //step:7
         qntmintnonmpforairdrop += _qnt;
@@ -574,12 +602,12 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
 
         //step:0
         require(presalePRT & 0x2 == 2, "e21");
-        require(userNONMPs[msg.sender] <= MAX_PRT_AMOUNT_PER_ACC_INTERNAL, "e17");
-        require(qnt <= MAX_PRT_AMOUNT_PER_ACC_PER_TRANSACTION_INTERNAL, "e18");
+        require(userNONMPs[msg.sender] <= prtAmountLimits.INTERNAL, "e17");
+        require(qnt <= prtAmountLimits.PER_TRANSACTION_INTERNAL, "e18");
 
         //step:1
-        if (userNONMPs[msg.sender] + qnt > MAX_PRT_AMOUNT_PER_ACC_INTERNAL) {
-            qnt = uint8(MAX_PRT_AMOUNT_PER_ACC_INTERNAL - userNONMPs[msg.sender]);
+        if (userNONMPs[msg.sender] + qnt > prtAmountLimits.INTERNAL) {
+            qnt = uint8(prtAmountLimits.INTERNAL - userNONMPs[msg.sender]);
             isRemainMessageNeeds = true;
         }
 
@@ -590,7 +618,7 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
             numIssuedForInternalTeamIDs,
             MAX_SUPPLY_FOR_INTERNALTEAM_TOKEN,
             EACH_RAND_SLOT_NUM_TOTAL_FOR_INTERNALTEAM,
-            intArrPRTInternalTeam
+            intarray.prtinternalteam
         );
 
         if (_qnt != qnt) {
@@ -625,7 +653,7 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
         //step:6
         //update:
         numIssuedForInternalTeamIDs = _numIssued;
-        intArrPRTInternalTeam[_randval] = intArrPRTInternalTeam[_randval] + _qnt;
+        intarray.prtinternalteam[_randval] = intarray.prtinternalteam[_randval] + _qnt;
 
         //step:7
         qntmintnonmpforinternalteam += _qnt;
@@ -655,12 +683,12 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
 
         //step:0
         require(presalePRT & 0x4 == 4, "e21");
-        require(userNONMPs[msg.sender] <= MAX_PRT_AMOUNT_PER_ACC, "e17");
-        require(qnt <= MAX_PRT_AMOUNT_PER_ACC_PER_TRANSACTION, "e18");
+        require(userNONMPs[msg.sender] <= prtAmountLimits.NORMAL, "e17");
+        require(qnt <= prtAmountLimits.PER_TRANSACTION_NORMAL, "e18");
 
         //step:1
-        if (userNONMPs[msg.sender] + qnt > MAX_PRT_AMOUNT_PER_ACC) {
-            qnt = uint8(MAX_PRT_AMOUNT_PER_ACC - userNONMPs[msg.sender]);
+        if (userNONMPs[msg.sender] + qnt > prtAmountLimits.NORMAL) {
+            qnt = uint8(prtAmountLimits.NORMAL - userNONMPs[msg.sender]);
             isRemainMessageNeeds = true;
         }
 
@@ -671,7 +699,7 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
             numIssuedForNormalUser,
             MAX_SUPPLY_FOR_PRT_TOKEN,
             EACH_RAND_SLOT_NUM_TOTAL_FOR_PRT,
-            intArrPRT
+            intarray.prtnormaluser
         );
         if (_qnt != qnt) {
             isRemainMessageNeeds = true;
@@ -711,7 +739,7 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
 
         //step:6
         numIssuedForNormalUser = _numIssued;
-        intArrPRT[_randval] = intArrPRT[_randval] + _qnt;
+        intarray.prtnormaluser[_randval] = intarray.prtnormaluser[_randval] + _qnt;
 
         //step:7
         qntmintnonmpfornormaluser += _qnt;

@@ -21,10 +21,11 @@ async function main() {
 
   //payment splitter
   const _team = [
-    '0x1090C62B584c1c9a56E3D8AFd70cf9F2ECee17CC', // miukki account gets 5% of the total revenue
-    '0x06f10E01E97718730179F53Bc6f8ff6625ACB2f1' // sam Account gets 15% of the total revenue
+    "0x522ce7ffdA95dAF57B341EEdbb6AEE97cB6cEc1f", // miukki 
+    "0x28fBd13e980Fca20dB114924926AF802ac1030c5",  // sam 
+    "0x18DC07CDBa57c63c8f2c1f2CBEBcdd4dc5cE638A" //owner
   ];
-  const _teamShares = [5, 15]; // 2 PEOPLE IN THE TEAM
+  const _teamShares = [5, 15, 80]; // 2 PEOPLE IN THE TEAM
 
   const _notRevealedUri = "https://ipfs.vipsland.com/nft/collections/genesis/json/hidden.json";
   const _revealedUri = "https://ipfs.vipsland.com/nft/collections/genesis/json/";

@@ -16,12 +16,15 @@
     "hardhat": "^2.13.0",
     "hardhat-gas-reporter": "^1.0.9",
     "keccak256": "^1.0.6",
+    "solhint-plugin-prettier": "^0.0.5",
     "solidity-coverage": "^0.8.2",
     "typechain": "^8.1.1"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.8.2",
+    "global": "^4.4.0",
     "hardhat-contract-sizer": "^2.8.0",
-    "merkletreejs": "^0.3.9"
+    "merkletreejs": "^0.3.9",
+    "solhint": "^3.4.1"
   }
 }

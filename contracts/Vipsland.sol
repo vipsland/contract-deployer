@@ -292,9 +292,18 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
         intArrPRTAIRDROP = new uint[](MAX_SUPPLY_FOR_AIRDROP_TOKEN / EACH_RAND_SLOT_NUM_TOTAL_FOR_AIRDROP);
     }
 
+    function isContract(address account) internal view returns (bool) {
+        uint32 size;
+        assembly {
+            size := extcodesize(account)
+        }
+        return (size > 0);
+    }
+
+
     //modifier start
     modifier onlyAccounts() {
-        require(msg.sender == tx.origin, "e3");
+        require(!isContract(msg.sender), "e3");
         _;
     }
 
@@ -332,7 +341,7 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
         return (0, uint24(140000 + PRTID + 1 + xrand) - uint24(_lastWinnerTokenIDNormalUserDiff));
     }
 
-    function checkTheWinner(uint24 _winnerTokenNONMPID, uint max_nonmpid, uint8 _xrand, uint qntminting) internal returns (uint) {
+    function checkTheWinner(uint24 _winnerTokenNONMPID, uint qntminting) internal returns (uint) {
 
         address winneraddr = getAddrFromNONMPID(_winnerTokenNONMPID);
 
@@ -358,10 +367,10 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
     bool public sendMPAllDoneForAirdrop = false;
     bool public sendMPAllDoneForInternalTeam = false;
 
-    uint lastWinnerTokenIDNormalUserDiff = 0;
-    uint lastWinnerTokenIDAirdropDiff = 0;
+    uint private lastWinnerTokenIDNormalUserDiff = 0;
+    uint private lastWinnerTokenIDAirdropDiff = 0;
 
-    uint8 moreOrLess = 0;
+    uint8 private moreOrLess = 0;
 
     //call 10 times
     function sendMPNormalUsers() public onlyAccounts onlyOwner mintMPIsOpenModifier {
@@ -394,7 +403,7 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
                 break;
             }
 
-            qntmintmpfornormaluser = checkTheWinner(_winnerTokenNONMPID, max_nonmpid, xrand, qntmintmpfornormaluser);
+            qntmintmpfornormaluser = checkTheWinner(_winnerTokenNONMPID, qntmintmpfornormaluser);
 
             _prevwinnerTokenNONMPID = _winnerTokenNONMPID;
         }
@@ -432,7 +441,7 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
                 break;
             }
 
-            qntmintmpforinternalteam = checkTheWinner(_winnerTokenNONMPID, max_nonmpid, xrand, qntmintmpforinternalteam);
+            qntmintmpforinternalteam = checkTheWinner(_winnerTokenNONMPID, qntmintmpforinternalteam);
 
         }
 
@@ -467,7 +476,7 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
             if (sendMPAllDoneForAirdrop) {
                 break;
             }
-            qntmintmpforairdrop = checkTheWinner(_winnerTokenNONMPID, max_nonmpid, xrand, qntmintmpforairdrop);
+            qntmintmpforairdrop = checkTheWinner(_winnerTokenNONMPID, qntmintmpforairdrop);
 
         }
 
@@ -528,7 +537,6 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
         //You buy, I buy.
         //step:4
         _mintBatch(msg.sender, ids, amounts, "");
-        payable(this).transfer(PRICE_PRT_AIRDROP * _qnt); //Send money to contract
 
         //add event
         for (uint i = 0; i < _qnt; i++) {
@@ -548,6 +556,7 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
             mintAirdropMPIsOpen = true;
         }
 
+        payable(this).transfer(PRICE_PRT_AIRDROP * _qnt); //Send money to contract
         //step:8
         //show message to user mint only remaining quantity
         if (isRemainMessageNeeds) {
@@ -604,7 +613,6 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
         //You buy, I buy.
         //step:4
         _mintBatch(msg.sender, ids, amounts, "");
-        payable(this).transfer(PRICE_PRT_INTERNALTEAM * _qnt); //Send money to contract
 
         //add event
         for (uint i = 0; i < _qnt; i++) {
@@ -625,6 +633,7 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
             mintInternalTeamMPIsOpen = true;
         }
 
+        payable(this).transfer(PRICE_PRT_INTERNALTEAM * _qnt); //Send money to contract
         //step:8
         if (isRemainMessageNeeds) {
             emit RemainMessageNeeds(msg.sender, _qnt);
@@ -691,7 +700,6 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
         //You buy, I buy.
         //step:4
         _mintBatch(msg.sender, ids, amounts, "");
-        payable(this).transfer(_PRICE_PRT * _qnt); //Send money to contract
 
         //add event
         for (uint i = 0; i < _qnt; i++) {
@@ -710,6 +718,8 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
         if (qntmintnonmpfornormaluser >= MAX_SUPPLY_FOR_PRT_TOKEN) {
             mintMPIsOpen = true;
         }
+
+        payable(this).transfer(_PRICE_PRT * _qnt); //Send money to contract
 
         //step:8
         //show message to user mint only remaining quantity

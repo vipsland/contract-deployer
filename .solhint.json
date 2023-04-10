@@ -1,0 +1,45 @@
+{
+  "extends": "solhint:recommended",
+  "rules": {
+    "func-visibility": [
+      "error",
+      {
+        "ignoreConstructors": true
+      }
+    ],
+    "modularize": [
+      "error",
+      "allow"
+    ],
+    "no-empty-blocks": "error",
+    "no-unused-vars": "error",
+    "no-multiple-empty-lines": [
+      "error",
+      {
+        "max": 1
+      }
+    ],
+    "max-line-length": [
+      "off",
+      {
+        "ignore-comments": true
+      }
+    ],
+    "avoid-throw": true,
+    "security/no-block-members": "error",
+    "security/no-send": "error",
+    "security/no-suicide": "error",
+    "security/no-low-level-calls": "error",
+    "security/no-inline-assembly": "error",
+    "security/no-external-call": "error",
+    "security/no-assign-params": "error",
+    "security/no-tx-origin": "error",
+    "security/no-constant-functions": "error",
+    "security/no-self-assembly": "error",
+    "security/no-complex-fallback": "error",
+    "security/no-state-variable-modification": "error",
+    "security/no-unnamed-external": "error",
+    "var-name-mixedcase": "off",
+    "no-inline-assembly": "off"
+  }
+}

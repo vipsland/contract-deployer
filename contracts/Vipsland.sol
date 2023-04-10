@@ -130,10 +130,6 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
     //NONMP AIRDROP8888 - 180001-188888
     uint public PRICE_PRT_AIRDROP = 0 ether;
 
-    function setPRICE_PRT_AIRDROP(uint price) public onlyOwner {
-        PRICE_PRT_AIRDROP = price;
-    }
-
     uint public constant MAX_SUPPLY_FOR_AIRDROP_TOKEN = 8888;
     uint public qntmintnonmpforairdrop = 0;
     uint public constant EACH_RAND_SLOT_NUM_TOTAL_FOR_AIRDROP = 1111;
@@ -250,16 +246,8 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
         mintAirdropMPIsOpen = !mintAirdropMPIsOpen; //only owner can toggle presale
     }
 
-    //toggle end
-
-    // events start
-    event DistributePRTs(address indexed acc, uint minted_amount, uint last_minted_NONMPID);
-    event WinnersMP(address indexed acc, uint winnerTokenPRTID);
-    event SelectedNONMPIDTokens(uint _winnerTokenNONMPID, uint max_nonmpid_minus_xrand);
-    event MPAllDone(bool sendMPAllDone);
     event RemainMessageNeeds(address indexed acc, uint256 qnt);
 
-    // events end
 
     //MerkleProof
     bytes32 public rootair;
@@ -345,7 +333,6 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
     }
 
     function checkTheWinner(uint24 _winnerTokenNONMPID, uint max_nonmpid, uint8 _xrand, uint qntminting) internal returns (uint) {
-        emit SelectedNONMPIDTokens(_winnerTokenNONMPID, (max_nonmpid - _xrand));
 
         address winneraddr = getAddrFromNONMPID(_winnerTokenNONMPID);
 
@@ -355,7 +342,6 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
             _mint(msg.sender, tokenID, 1, ""); //minted one MP
             safeTransferFrom(msg.sender, winneraddr, tokenID, 1, "");
             qntminting += 1;
-            emit WinnersMP(winneraddr, tokenID);
         }
 
         return (qntminting);
@@ -393,7 +379,6 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
             uint24 _nextwinnerTokenNONMPID = uint24(PRTID + 1 + xrand + uint24(uint((168888 * i + 1) / 10000)));
 
             sendMPAllDoneForNormalUsers = (_nextwinnerTokenNONMPID > max_nonmpid) || (_winnerTokenNONMPID > max_nonmpid);
-            emit MPAllDone(sendMPAllDoneForNormalUsers);
 
             if (sendMPAllDoneForNormalUsers) {
                 lastWinnerTokenIDNormalUserDiff = uint(_nextwinnerTokenNONMPID);
@@ -411,7 +396,6 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
 
             qntmintmpfornormaluser = checkTheWinner(_winnerTokenNONMPID, max_nonmpid, xrand, qntmintmpfornormaluser);
 
-            emit MPAllDone(sendMPAllDoneForNormalUsers);
             _prevwinnerTokenNONMPID = _winnerTokenNONMPID;
         }
 
@@ -443,7 +427,6 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
             uint max_nonmpid = PRTID + MAX_SUPPLY_FOR_PRT_TOKEN + MAX_SUPPLY_FOR_INTERNALTEAM_TOKEN;
             sendMPAllDoneForInternalTeam = (_nextwinnerTokenNONMPID > max_nonmpid) || (_winnerTokenNONMPID > max_nonmpid);
 
-            emit MPAllDone(sendMPAllDoneForInternalTeam);
 
             if (sendMPAllDoneForInternalTeam) {
                 break;
@@ -451,7 +434,6 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
 
             qntmintmpforinternalteam = checkTheWinner(_winnerTokenNONMPID, max_nonmpid, xrand, qntmintmpforinternalteam);
 
-            emit MPAllDone(sendMPAllDoneForInternalTeam);
         }
 
         idxInternalTeam = 1000 * counter;
@@ -481,14 +463,12 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
 
             sendMPAllDoneForAirdrop = (_nextwinnerTokenNONMPID > max_nonmpid) || (_winnerTokenNONMPID > max_nonmpid);
 
-            emit MPAllDone(sendMPAllDoneForAirdrop);
 
             if (sendMPAllDoneForAirdrop) {
                 break;
             }
             qntmintmpforairdrop = checkTheWinner(_winnerTokenNONMPID, max_nonmpid, xrand, qntmintmpforairdrop);
 
-            emit MPAllDone(sendMPAllDoneForAirdrop);
         }
 
         idxAirdrop = 1000 * counter;
@@ -569,7 +549,6 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
         }
 
         //step:8
-        emit DistributePRTs(msg.sender, userNONMPs[msg.sender], ids[_qnt - 1]);
         //show message to user mint only remaining quantity
         if (isRemainMessageNeeds) {
             emit RemainMessageNeeds(msg.sender, _qnt);
@@ -647,7 +626,6 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
         }
 
         //step:8
-        emit DistributePRTs(msg.sender, userNONMPs[msg.sender], ids[_qnt - 1]);
         if (isRemainMessageNeeds) {
             emit RemainMessageNeeds(msg.sender, _qnt);
         }
@@ -734,7 +712,6 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
         }
 
         //step:8
-        emit DistributePRTs(msg.sender, userNONMPs[msg.sender], ids[_qnt - 1]);
         //show message to user mint only remaining quantity
         if (isRemainMessageNeeds) {
             emit RemainMessageNeeds(msg.sender, _qnt);
@@ -742,10 +719,6 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
 
     }
 
-    function withdraw() public onlyOwner {
-        payable(owner()).transfer(address(this).balance);
-    }
-    
     //*Just kidding. Our code is actually endorsed by goddesses. 
     //Now that you read our code, to claim your blessings, 
     //buy 1 VIPSLAND NFT and get 10 others to buy an NFT from us

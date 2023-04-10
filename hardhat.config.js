@@ -2,6 +2,7 @@ require("@nomicfoundation/hardhat-toolbox");
 require('hardhat-contract-sizer');
 require('solidity-coverage');
 require("dotenv").config();
+require("@nomiclabs/hardhat-solhint");
 
 const { SEPOLIA_RPC_URL, GOERLI_RPC_URL, SEPOLIA_PRIVATE_KEY, GOERLI_PRIVATE_KEY, ETHERSCANAPIKEY } = process.env;
 

@@ -8,12 +8,13 @@
     "@nomicfoundation/hardhat-toolbox": "^2.0.2",
     "@nomiclabs/hardhat-ethers": "^2.2.2",
     "@nomiclabs/hardhat-etherscan": "^3.1.7",
+    "@nomiclabs/hardhat-solpp": "^2.0.1",
     "@typechain/ethers-v5": "^10.2.0",
     "@typechain/hardhat": "^6.1.5",
     "chai": "^4.3.7",
     "dotenv": "^16.0.3",
     "ethers": "^5.7.2",
-    "hardhat": "^2.13.0",
+    "hardhat": "^2.13.1",
     "hardhat-gas-reporter": "^1.0.9",
     "keccak256": "^1.0.6",
     "solhint-plugin-prettier": "^0.0.5",
@@ -21,6 +22,7 @@
     "typechain": "^8.1.1"
   },
   "dependencies": {
+    "@nomiclabs/hardhat-solhint": "^3.0.1",
     "@openzeppelin/contracts": "^4.8.2",
     "global": "^4.4.0",
     "hardhat-contract-sizer": "^2.8.0",

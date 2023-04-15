@@ -91,7 +91,7 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
         Counters.Counter airdrop;
     }
 
-    StateToken private statetoken;
+    StateToken public statetoken;
 
     struct IntArr {
         uint[] mp;

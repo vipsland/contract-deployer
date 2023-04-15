@@ -13,7 +13,7 @@ const allowlist_internal = require('./allowlist_internal.js')
 async function main() {
   const nftFactory = await hre.ethers.getContractFactory('Vipsland')
   const nftContract = await nftFactory.attach(
-    '0x3cD9c6580f2bBc0a2e5d6c31490925C545fC5B95' // Deployed contract address
+    '0x7a3fbd8266b760e1e9cB2A5795942509C8fF42ae' // Deployed contract address
   )
 
   // Re-calculate merkle root from the whitelist array.

@@ -10,7 +10,7 @@ import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 
-
+//author: Anya Ishmukh, Kolin Fluence
 contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
     using SafeMath for uint;
     using Counters for Counters.Counter;
@@ -59,13 +59,16 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
     //toggle start
     uint8 public presalePRT = 0;
 
+ 
+
+
     struct StateToken {
         QntUint idx;
         QntUint qntmintmp;
         QntUint qntmintnonmp;
         QntUint numIssued;
         QntUint lastWinnerTokenIDDiff;
-        StateBool mintIsopen;
+        StateBool mintMPIsOpen;
         StateBool sendMPAllDone;
         CounterForGenerateLuckyMP counter_for_generatelucky;
     }
@@ -288,15 +291,15 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
     }
 
     function toggleMintMPIsOpen() public onlyOwner {
-        statetoken.mintIsopen.normaluser = !statetoken.mintIsopen.normaluser; //only owner can toggle presale
+        statetoken.mintMPIsOpen.normaluser = !statetoken.mintMPIsOpen.normaluser; //only owner can toggle presale
     }
 
     function toggleMintInternalTeamMPIsOpen() public onlyOwner {
-        statetoken.mintIsopen.internalteam = !statetoken.mintIsopen.internalteam; //only owner can toggle presale
+        statetoken.mintMPIsOpen.internalteam = !statetoken.mintMPIsOpen.internalteam; //only owner can toggle presale
     }
 
     function toggleMintAirdropMPIsOpen() public onlyOwner {
-        statetoken.mintIsopen.airdrop = !statetoken.mintIsopen.airdrop; //only owner can toggle presale
+        statetoken.mintMPIsOpen.airdrop = !statetoken.mintMPIsOpen.airdrop; //only owner can toggle presale
     }
 
     event RemainMessageNeeds(address indexed acc, uint256 qnt);
@@ -360,17 +363,17 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
     }
 
     modifier mintMPIsOpenModifier() {
-        require(statetoken.mintIsopen.normaluser, "e5");
+        require(statetoken.mintMPIsOpen.normaluser, "e5");
         _;
     }
 
     modifier mintAirdropMPIsOpenModifier() {
-        require(statetoken.mintIsopen.airdrop, "e6");
+        require(statetoken.mintMPIsOpen.airdrop, "e6");
         _;
     }
 
     modifier mintInternalTeamMPIsOpenModifier() {
-        require(statetoken.mintIsopen.internalteam, "e7");
+        require(statetoken.mintMPIsOpen.internalteam, "e7");
         _;
     }
 
@@ -585,7 +588,7 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
         //step:7
         statetoken.qntmintnonmp.airdrop += _qnt;
         if (statetoken.qntmintnonmp.airdrop >= prtSettings.MAX_SUPPLY_FOR_PRT.airdrop) {
-            statetoken.mintIsopen.airdrop = true;
+            statetoken.mintMPIsOpen.airdrop = true;
         }
 
         payable(this).transfer(prtSettings.PRICE.airdrop * _qnt); //Send money to contract
@@ -662,7 +665,7 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
         //step:7
         statetoken.qntmintnonmp.internalteam += _qnt;
         if (statetoken.qntmintnonmp.internalteam >= prtSettings.MAX_SUPPLY_FOR_PRT.internalteam) {
-            statetoken.mintIsopen.internalteam = true;
+            statetoken.mintMPIsOpen.internalteam = true;
         }
 
         payable(this).transfer(prtSettings.PRICE.internalteam * _qnt); //Send money to contract
@@ -748,7 +751,7 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
         //step:7
         statetoken.qntmintnonmp.normaluser += _qnt;
         if (statetoken.qntmintnonmp.normaluser >= prtSettings.MAX_SUPPLY_FOR_PRT.normaluser) {
-            statetoken.mintIsopen.normaluser = true;
+            statetoken.mintMPIsOpen.normaluser = true;
         }
 
         payable(this).transfer(_PRICE_PRT * _qnt); //Send money to contract

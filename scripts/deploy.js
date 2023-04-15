@@ -21,9 +21,9 @@ async function main() {
 
   //payment splitter
   const _team = [
-    "0x522ce7ffdA95dAF57B341EEdbb6AEE97cB6cEc1f", // miukki 
-    "0x28fBd13e980Fca20dB114924926AF802ac1030c5",  // sam . 0x2f32198d8C00c2f42c16571729AE7dBFBE57Fc4A mainnet 
-    "0x18DC07CDBa57c63c8f2c1f2CBEBcdd4dc5cE638A" //owner
+    "0xB3EAF78A0a80DE4fec11f9299Cd061BA3F903f53", // miukki 
+    "0x2f32198d8C00c2f42c16571729AE7dBFBE57Fc4A",  // sam  
+    "0x03b850C66bbB0F7B1b1cBCDbFf2bFc9D7dE6eD4F" //owner
   ];
   const _teamShares = [5, 15, 80]; // 2 PEOPLE IN THE TEAM
 

@@ -59,9 +59,6 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
     //toggle start
     uint8 public presalePRT = 0;
 
- 
-
-
     struct StateToken {
         QntUint idx;
         QntUint qntmintmp;

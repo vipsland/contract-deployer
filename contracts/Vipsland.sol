@@ -41,19 +41,19 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
         bool revealed;
     }
 
-    Uri public reveale_state;
+    Uri public reveal_state;
 
     mapping(uint => string) private _uris;
 
     function toggleReveal() public onlyOwner {
-        reveale_state.revealed = !reveale_state.revealed;
+        reveal_state.revealed = !reveal_state.revealed;
     }
 
     function uri(uint) public view override returns (string memory) {
-        if (reveale_state.revealed == false) {
-            return reveale_state.notRevealedUri;
+        if (reveal_state.revealed == false) {
+            return reveal_state.notRevealedUri;
         }
-        return (string(abi.encodePacked(reveale_state.revealedUri, "{id}", ".json")));
+        return (string(abi.encodePacked(reveal_state.revealedUri, "{id}", ".json")));
     }
 
     //toggle start
@@ -328,8 +328,8 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
         rootint = merklerootint;
 
         //metadata
-        reveale_state.notRevealedUri = _notRevealedUri;
-        reveale_state.revealedUri = _revealedUri;
+        reveal_state.notRevealedUri = _notRevealedUri;
+        reveal_state.revealedUri = _revealedUri;
 
         //for mp
         intarray.mp = new uint[](prtSettings.MAX_SUPPLY_MP / prtSettings.NUM_TOTAL_FOR_MP);

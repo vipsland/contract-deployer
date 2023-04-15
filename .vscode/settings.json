@@ -1,0 +1,7 @@
+{
+  "solidity.compileUsingRemoteVersion": "",
+  "solidity.enabledAsYouTypeCompilationErrorCheck": true,
+  "solidity.validationDelay": 1500,
+  "solidity.linter": "solhint",
+  "solidity.compileUsingLocalVersion": "./node_modules/solc/solcjs",
+}

@@ -13,7 +13,7 @@ const allowlist_airdrop = require('./allowlist_airdrop.js')
 async function main() {
   const nftFactory = await hre.ethers.getContractFactory('Vipsland')
   const nftContract = await nftFactory.attach(
-    '0xF4f2a19586c83819357F6816507152c2b92cc935' // Deployed contract address
+    '0x7a3fbd8266b760e1e9cB2A5795942509C8fF42ae' // Deployed contract address
   )
 
   // Re-calculate merkle root from the whitelist array.

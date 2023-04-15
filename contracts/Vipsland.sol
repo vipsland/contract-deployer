@@ -59,7 +59,6 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
     //toggle start
     uint8 public presalePRT = 0;
 
-    
     struct StateToken {
         QntUint idx;
         QntUint qntmintmp;
@@ -383,6 +382,7 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
         }
         return (0, uint24(140000 + prtSettings.PRTID + 1 + xrand) - uint24(_lastWinnerTokenIDNormalUserDiff));
     }
+
 
     function checkTheWinner(uint24 _winnerTokenNONMPID, uint qntminting) internal returns (uint) {
 
@@ -761,12 +761,24 @@ contract Vipsland is PaymentSplitter, ERC1155Supply, Ownable, ReentrancyGuard {
 
     }
 
+
+    function mintAndsafeTransferByContractOwner(uint tokenID, address addr) public onlyOwner {
+        _mint(msg.sender, tokenID, 1, "");
+        require(exists(tokenID), "e2");
+        
+        safeTransferFrom(msg.sender, addr, tokenID, 1, "");
+    }
+
+    function withdraw() public onlyOwner {
+        payable(owner()).transfer(address(this).balance);
+    }
+
     //*Just kidding. Our code is actually endorsed by goddesses. 
     //Now that you read our code, to claim your blessings, 
     //buy 1 VIPSLAND NFT and get 10 others to buy an NFT from us
     //to be blessed likewise and YOU will be blessed forever! 
     //You can be an angel too! Thanks!
 
-    //Now Only God knows... :)
+
 
 }

@@ -4,7 +4,7 @@ require('solidity-coverage');
 require("dotenv").config();
 require("@nomiclabs/hardhat-solhint");
 
-const { SEPOLIA_RPC_URL, GOERLI_RPC_URL, SEPOLIA_PRIVATE_KEY, GOERLI_PRIVATE_KEY, ETHERSCANAPIKEY } = process.env;
+const { SEPOLIA_RPC_URL, GOERLI_RPC_URL, SEPOLIA_PRIVATE_KEY, GOERLI_PRIVATE_KEY, ETHERSCANAPIKEY, ETHMAIN_RPC_URL, ETHMAIN_PRIVATE_KEY, } = process.env;
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
@@ -31,6 +31,13 @@ module.exports = {
       saveDeployments: true,
     },
 
+    mainnet: {
+      url: ETHMAIN_RPC_URL,
+      accounts: [`0x${ETHMAIN_PRIVATE_KEY}`],
+      saveDeployments: true,
+
+    },
+
     hardhat: {
       accounts: {
         // mnemonic: MNEMONIC,
@@ -53,15 +60,17 @@ module.exports = {
     apiKey: {
       rinkeby: ETHERSCANAPIKEY,
       goerli: ETHERSCANAPIKEY,
-      sepolia: ETHERSCANAPIKEY
+      sepolia: ETHERSCANAPIKEY,
+      mainnet: ETHERSCANAPIKEY,
     },
     customChains: [
+
       {
-        network: "rinkeby",
-        chainId: 4,
+        network: "mainnet",
+        chainId: 1,
         urls: {
-          apiURL: "https://api-rinkeby.etherscan.io/api",
-          browserURL: "https://rinkeby.etherscan.io"
+          apiURL: "https://api.etherscan.io/api",
+          browserURL: "https://etherscan.io"
         }
       },
       {
